@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-
+from carbon_database import log_emission,get_user_emissions
 EMISSION_FACTORS = {
     'electricity': 0.277,
     'petrol': 2.31,
@@ -9,7 +9,6 @@ EMISSION_FACTORS = {
     'paper': 1.7,
     'plastic': 6.0,
 }
-
 def calculate_emissions(user_data):
     total_emission = 0
     breakdown = {}
@@ -22,11 +21,9 @@ def calculate_emissions(user_data):
         breakdown[activity] = emission
         total_emission += emission
     return total_emission, breakdown
-
 def plot_carbon(breakdown):
     categories = list(breakdown.keys())
     emissions = list(breakdown.values())
-
     plt.figure(figsize=(10, 6))
     plt.bar(categories, emissions, color="red")
     plt.title("Carbon Emission per Activity")
@@ -36,12 +33,20 @@ def plot_carbon(breakdown):
         plt.text(i, val + 0.5, f"{val:.1f}", ha='center')
     plt.tight_layout()
     plt.show()
-
     plt.figure(figsize=(8, 8))
     plt.pie(emissions, labels=categories, autopct='%1.1f%%', startangle=140)
     plt.title('Carbon Emission Share by Activity')
     plt.axis('equal')
     plt.tight_layout()
+    plt.show()
+def comparions(user_id,week1_dates,week2_dates):
+    data=get_user_emissions(user_id)
+    week1_total=sum(data[d]['total_emission'] for d in data if d in week1_dates)
+    week2_total=sum(data[d]['total_emission'] for d in data if d in week2_dates)
+    plt.bar(['Week 1','Week 2','Week 3','Week 4'],[week1_total,week2_total],color=['yellow','orange'])
+    plt.title('Weekly carbon emission compariosn')
+    plt.ylabel('Co2 emission per kg')
+    plt.xlabel('Week')
     plt.show()
 
 def main():
