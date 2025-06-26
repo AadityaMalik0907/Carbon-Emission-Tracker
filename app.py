@@ -27,21 +27,26 @@ if st.button("Calculate"):
     if total > 0:
         # Bar chart for emission per activity
         fig1, ax1 = plt.subplots()
-        ax1.bar(breakdown.keys(), breakdown.values(), color="skyblue")
+        bars = ax1.bar(breakdown.keys(), breakdown.values(), color="red")
         ax1.set_title("Carbon Emission per Activity")
-        ax1.set_ylabel("CO₂ Emission (kg)")
+        ax1.set_ylabel("CO2 Emission (kg)")
+        ax1.set_xlabel("Activity")
+        for bar in bars:
+            height = bar.get_height()
+            ax1.text(bar.get_x() + bar.get_width() / 2, height + 1, f"{height:.1f}", ha='center')
         st.pyplot(fig1)
 
-        # Pie chart for emission per activity
+        # Pie chart for emission share
         fig2, ax2 = plt.subplots()
-        ax2.pie(breakdown.values(), labels=breakdown.keys(), autopct="%1.1f%%")
-        ax2.set_title("Emission Share by Activity")
+        ax2.pie(breakdown.values(), labels=breakdown.keys(), autopct='%1.1f%%', startangle=140)
+        ax2.set_title('Carbon Emission Share by Activity')
+        ax2.axis('equal')
         st.pyplot(fig2)
 
         # Comparison with ideal value
         ideal = 70
         fig3, ax3 = plt.subplots()
-        ax3.bar(["Ideal Emission", "Your Emission"], [ideal, total], color=["green", "red"])
+        ax3.bar(["Ideal Emission", "Your Emission"], [ideal, total], color=["green", "blue"])
         ax3.set_title("Comparison with Ideal Daily Emission")
         ax3.set_ylabel("kg CO₂")
         for i, val in enumerate([ideal, total]):
