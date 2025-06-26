@@ -14,6 +14,16 @@ EMISSION_FACTORS = {
     'plastic': 6.0,
 }
 
+# Session state defaults
+if "show_login" not in st.session_state:
+    st.session_state.show_login = False
+if "user_id" not in st.session_state:
+    st.session_state.user_id = None
+if "latest_breakdown" not in st.session_state:
+    st.session_state.latest_breakdown = None
+if "latest_total" not in st.session_state:
+    st.session_state.latest_total = None
+
 def calculate_emissions(user_data):
     total_emission = 0
     breakdown = {}
@@ -105,9 +115,8 @@ def main():
         try:
             total_emission, breakdown = calculate_emissions(inputs)
             st.metric("Total Emissions", f"{total_emission:.2f} kg CO₂")
-
-            st.session_state["latest_breakdown"] = breakdown
-            st.session_state["latest_total"] = total_emission
+            st.session_state.latest_breakdown = breakdown
+            st.session_state.latest_total = total_emission
 
             plot_carbon(breakdown)
             get_ideal_comparison_graph(total_emission)
@@ -118,27 +127,35 @@ def main():
         except ValueError as e:
             st.error(f"Error: {e}")
 
-    if st.session_state.get("show_login", False):
+    # 🚨 Always display last results if present
+    if st.session_state.latest_breakdown:
+        st.subheader("Previous Calculation Results")
+        st.metric("Last Total Emissions", f"{st.session_state.latest_total:.2f} kg CO₂")
+        plot_carbon(st.session_state.latest_breakdown)
+        get_ideal_comparison_graph(st.session_state.latest_total)
+
+    if st.session_state.show_login:
         st.subheader("Login or Sign Up to Save Data")
-        mode = st.radio("Mode", ["Login", "Sign Up"])
-        email = st.text_input("Email")
-        password = st.text_input("Password", type="password")
-        if st.button("Submit"):
+        mode = st.radio("Mode", ["Login", "Sign Up"], key="auth_mode")
+        email = st.text_input("Email", key="auth_email")
+        password = st.text_input("Password", type="password", key="auth_password")
+
+        if st.button("Submit Login"):
             if email and password:
                 try:
                     uid = f"user:{email}" if mode == "Login" else "signup_placeholder"
                     st.success(f"{mode} successful. Data saved.")
-                    if "latest_breakdown" in st.session_state:
-                        log_emission(uid, st.session_state["latest_breakdown"])
-                    st.session_state["user_id"] = uid
+                    if st.session_state.latest_breakdown:
+                        log_emission(uid, st.session_state.latest_breakdown)
+                    st.session_state.user_id = uid
                     st.session_state.show_login = False
                 except Exception as e:
                     st.error(f"Authentication failed: {e}")
             else:
                 st.warning("Please enter both email and password.")
 
-    if st.session_state.get("user_id") and st.button("Show Weekly Comparison"):
-        comparisons(st.session_state["user_id"])
+    if st.session_state.user_id and st.button("Show Weekly Comparison"):
+        comparisons(st.session_state.user_id)
 
 if __name__ == "__main__":
     main()
