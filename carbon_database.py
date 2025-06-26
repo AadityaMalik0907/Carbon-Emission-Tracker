@@ -2,8 +2,12 @@ import firebase_admin
 from firebase_admin import credentials, db, auth
 from datetime import datetime
 
-# Initialize Firebase
-cred = credentials.Certificate("E:/Carbon emmison/firebase_carbon_tracker.json")
+import json
+import os
+
+cred_dict = json.loads(os.environ["FIREBASE_KEY"])
+cred = credentials.Certificate(cred_dict)
+
 firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://console.firebase.google.com/project/carbon-emission-trac/overview' 
 })
