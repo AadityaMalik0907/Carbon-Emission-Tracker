@@ -1,69 +1,89 @@
 import streamlit as st
 import matplotlib.pyplot as plt
 from datetime import datetime
-from carbon_calculator import calculate_emissions
-from carbon_database import log_emission, get_user_emissions
+from carbon_calculator import calculate_emissions, EMISSION_FACTORS
+from carbon_database import log_emission, get_user_emissions, sign_up
+
 st.set_page_config(page_title="Carbon Emission Tracker", layout="wide")
-st.title("Carbon Emission Tracker")
-st.sidebar.header("User Login")
-user_id = st.sidebar.text_input("Enter your User ID")
-today = datetime.now().strftime("%Y-%m-%d")
-st.sidebar.markdown("Don't have an account? Generate your UID in Firebase Console.")
-st.header("Enter Your Weekly Activities")
-with st.form("activity_form"):
-    electricity = st.number_input("Electricity (kWh)", min_value=0.0)
-    petrol = st.number_input("Petrol (litres)", min_value=0.0)
-    diesel = st.number_input("Diesel (litres)", min_value=0.0)
-    natural_gas = st.number_input("Natural Gas (m³)", min_value=0.0)
-    organic_waste = st.number_input("Organic Waste (kg)", min_value=0.0)
-    paper = st.number_input("Paper (kg)", min_value=0.0)
-    plastic = st.number_input("Plastic (kg)", min_value=0.0)
-    submitted = st.form_submit_button("Calculate & Save")
-if submitted and user_id:
-    user_data = {
-        'electricity': electricity,
-        'petrol': petrol,
-        'diesel': diesel,
-        'natural_gas': natural_gas,
-        'organic_waste': organic_waste,
-        'paper': paper,
-        'plastic': plastic
-    }
-    total, breakdown = calculate_emissions(user_data)
-    st.success(f"Total Emission: {total:.2f} kg CO2")
-    st.subheader("Emission Breakdown")
-    fig1, ax1 = plt.subplots()
-    ax1.bar(breakdown.keys(), breakdown.values(), color="red")
-    ax1.set_ylabel("CO2 Emission (kg)")
-    ax1.set_title("Carbon Emission by Activity")
-    st.pyplot(fig1)
-    fig2, ax2 = plt.subplots()
-    ax2.pie(breakdown.values(), labels=breakdown.keys(), autopct='%1.1f%%', startangle=140)
-    ax2.axis("equal")
-    st.pyplot(fig2)
-    log_emission(user_id, breakdown)
-st.header("Weekly Emission Comparison")
+st.title("🌱 Carbon Emission Tracker")
 
-col1, col2 = st.columns(2)
-with col1:
-    week1 = st.text_input("Week 1 Dates (comma-separated, e.g. 2025-06-01,2025-06-02)")
-with col2:
-    week2 = st.text_input("Week 2 Dates (comma-separated, e.g. 2025-06-08,2025-06-09)")
+# ------------------------ Login / Signup Section ------------------------ #
+st.sidebar.header("🔐 User Authentication")
+auth_mode = st.sidebar.radio("Login or Sign Up", ["Login", "Sign Up"])
+email = st.sidebar.text_input("Email")
+password = st.sidebar.text_input("Password", type="password")
 
-if st.button("Compare Weeks") and user_id:
-    data = get_user_emissions(user_id)
-    if data:
-        week1_dates = [d.strip() for d in week1.split(",") if d.strip() in data]
-        week2_dates = [d.strip() for d in week2.split(",") if d.strip() in data]
-
-        week1_total = sum(data[d]['total_emission'] for d in week1_dates)
-        week2_total = sum(data[d]['total_emission'] for d in week2_dates)
-
-        st.subheader("Comparison Result")
-        fig, ax = plt.subplots()
-        ax.bar(["Week 1", "Week 2"], [week1_total, week2_total], color=["orange", "blue"])
-        ax.set_ylabel("Total CO2 Emission (kg)")
-        ax.set_title("Weekly Emission Comparison")
-        st.pyplot(fig)
+user_id = None
+if st.sidebar.button("Submit"):
+    if email and password:
+        try:
+            if auth_mode == "Sign Up":
+                user_id = sign_up(email, password)
+                st.sidebar.success("User signed up successfully!")
+            else:
+                # Firebase Admin SDK does not support user login directly
+                # Here we assume a simple placeholder to simulate login
+                user_id = "user:" + email  # Replace with real auth in production
+                st.sidebar.success("Logged in!")
+            st.session_state.user_id = user_id
+        except Exception as e:
+            st.sidebar.error(f"Auth Error: {e}")
     else:
-        st.warning("No emission data found for this user.")
+        st.sidebar.warning("Enter both email and password")
+
+user_id = st.session_state.get("user_id")
+
+if not user_id:
+    st.info("Please log in to use the tracker.")
+    st.stop()
+
+# ------------------------ Emission Input Section ------------------------ #
+st.header("Enter Your Daily Activity Data")
+inputs = {}
+
+cols = st.columns(3)
+for i, (activity, factor) in enumerate(EMISSION_FACTORS.items()):
+    with cols[i % 3]:
+        qty = st.number_input(f"{activity.title()} ({factor} kg CO2/unit)", min_value=0.0, step=0.1)
+        inputs[activity] = qty
+
+if st.button("Calculate and Save"):
+    total = calculate_emissions(inputs)
+    st.metric("Total Emissions", f"{total:.2f} kg CO₂")
+    log_emission(user_id, inputs)
+    st.success("Emission data saved!")
+
+# ------------------------ Emission History & Graphs ------------------------ #
+st.header("📈 Emission History & Charts")
+if st.button("Show My Emission Charts"):
+    history = get_user_emissions(user_id)
+    if history:
+        dates = []
+        totals = []
+        activity_totals = {k: 0 for k in EMISSION_FACTORS.keys()}
+
+        for date, entry in sorted(history.items()):
+            dates.append(date)
+            totals.append(entry['total_emission'])
+            for k, v in entry['activities'].items():
+                activity_totals[k] += v * EMISSION_FACTORS.get(k, 0)
+
+        fig, ax = plt.subplots()
+        ax.plot(dates, totals, marker='o')
+        ax.set_title("Total Emissions Over Time")
+        ax.set_xlabel("Date")
+        ax.set_ylabel("kg CO₂")
+        st.pyplot(fig)
+
+        fig2, ax2 = plt.subplots()
+        ax2.bar(activity_totals.keys(), activity_totals.values())
+        ax2.set_title("Cumulative Emissions by Activity")
+        ax2.set_ylabel("kg CO₂")
+        st.pyplot(fig2)
+
+        fig3, ax3 = plt.subplots()
+        ax3.pie(activity_totals.values(), labels=activity_totals.keys(), autopct="%1.1f%%")
+        ax3.set_title("Emission Share by Activity")
+        st.pyplot(fig3)
+    else:
+        st.info("No emission data found.")
