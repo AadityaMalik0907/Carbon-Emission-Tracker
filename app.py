@@ -1,40 +1,11 @@
 import streamlit as st
 import matplotlib.pyplot as plt
 from datetime import datetime
-from carbon_calculator import calculate_emissions, EMISSION_FACTORS
+from carbon_calculator import calculate_emissions, EMISSION_FACTORS, plot_carbon, get_ideal_comparison_graph
 from carbon_database import log_emission, get_user_emissions, sign_up
 
 st.set_page_config(page_title="Carbon Emission Tracker", layout="wide")
-st.title("🌱 Carbon Emission Tracker")
-
-# ------------------------ Login / Signup Section ------------------------ #
-st.sidebar.header("🔐 User Authentication")
-auth_mode = st.sidebar.radio("Login or Sign Up", ["Login", "Sign Up"])
-email = st.sidebar.text_input("Email", key="email")
-password = st.sidebar.text_input("Password", type="password", key="password")
-
-if "user_id" not in st.session_state:
-    st.session_state["user_id"] = None
-
-if st.sidebar.button("Submit"):
-    if email and password:
-        try:
-            if auth_mode == "Sign Up":
-                uid = sign_up(email, password)
-                st.sidebar.success("Account created.")
-            else:
-                uid = "user:" + email  # Fake login ID for demo
-            st.session_state["user_id"] = uid
-            st.rerun()
-        except Exception as e:
-            st.sidebar.error(f"Auth failed: {e}")
-    else:
-        st.sidebar.warning("Please fill both fields.")
-
-user_id = st.session_state.get("user_id")
-if not user_id:
-    st.info("Please log in to use the tracker.")
-    st.stop()
+st.title("Carbon Emission Tracker")
 
 # ------------------------ Emission Input Section ------------------------ #
 st.header("Enter Your Daily Activity Data")
@@ -46,16 +17,47 @@ for i, (activity, factor) in enumerate(EMISSION_FACTORS.items()):
         qty = st.number_input(f"{activity.title()} ({factor} kg CO2/unit)", min_value=0.0, step=0.1)
         inputs[activity] = qty
 
-if st.button("Calculate and Save"):
-    total = calculate_emissions(inputs)
+if st.button("Calculate"):
+    total, breakdown = calculate_emissions(inputs)
     st.metric("Total Emissions", f"{total:.2f} kg CO₂")
-    log_emission(user_id, inputs)
-    st.success("Emission data saved!")
+    st.session_state["latest_inputs"] = inputs
+    st.session_state["latest_total"] = total
+    st.session_state["latest_breakdown"] = breakdown
+    plot_carbon(breakdown)
+    get_ideal_comparison_graph(total)
+
+    # Detect spike
+    if total > 100:  # example threshold
+        st.warning("Your carbon emission is significantly high today. Consider reducing energy or fuel usage.")
+
+    if st.button("Save my data (requires login)"):
+        st.session_state.show_login = True
+
+if st.session_state.get("show_login"):
+    st.subheader("Login or Sign Up to Save Data")
+    auth_mode = st.radio("Mode", ["Login", "Sign Up"])
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
+    if st.button("Submit"):
+        if email and password:
+            try:
+                if auth_mode == "Sign Up":
+                    uid = sign_up(email, password)
+                    st.success("Account created. Data saved.")
+                else:
+                    uid = "user:" + email
+                    st.success("Logged in. Data saved.")
+                log_emission(uid, st.session_state["latest_breakdown"])
+                st.session_state["user_id"] = uid
+                st.session_state.show_login = False
+            except Exception as e:
+                st.error(f"Auth failed: {e}")
+        else:
+            st.warning("Please enter email and password")
 
 # ------------------------ Emission History & Graphs ------------------------ #
-st.header("📈 Emission History & Charts")
-if st.button("Show My Emission Charts"):
-    history = get_user_emissions(user_id)
+if st.session_state.get("user_id") and st.button("Show My Emission Charts"):
+    history = get_user_emissions(st.session_state["user_id"])
     if history:
         dates = []
         totals = []

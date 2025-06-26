@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from carbon_database import log_emission,get_user_emissions
+import streamlit as st
 EMISSION_FACTORS = {
     'electricity': 0.277,
     'petrol': 2.31,
@@ -48,6 +49,19 @@ def comparions(user_id,week1_dates,week2_dates):
     plt.ylabel('Co2 emission per kg')
     plt.xlabel('Week')
     plt.show()
+def get_ideal_comparison_graph(user_total):
+    ideal = 70  # kg per day (example)
+    categories = ['Ideal Emission', 'Your Emission']
+    values = [ideal, user_total]
+
+    fig, ax = plt.subplots()
+    ax.bar(categories, values, color=['green', 'red'])
+    ax.set_title('Comparison with Ideal Daily Emission')
+    ax.set_ylabel('kg CO₂')
+    for i, val in enumerate(values):
+        ax.text(i, val + 1, f'{val:.1f}', ha='center')
+    st.pyplot(fig)
+
 
 def main():
     user_data = {

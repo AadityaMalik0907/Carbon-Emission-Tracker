@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "carbon-emission-trac",
+  "private_key_id": "9ba8bfd3d114b81f92c30034c6b3d7609b478cb6",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC10DXV+2C9MxPj\njuDgxHBpJYjwxZn0C6CTRiStqT8wKzEJQ8WIF0HRELWlBMb7uRdD51eIwTMsQKyM\n21Zfi2yFl1pd+JXGt1VYSWjjeFxn6yZ+WLvBGkWfkRoSTp+BYDQZ+jKR4qADgx7H\nheisbLlWypnc1nbHUTY/dWUunHMsDZ/7ogLWL9Hhl31HdZ3Go2y22/slU0LzVLCk\nuH0+ouApmKC6uH2lqtMDkl1eMciV9gtANhChuZ1PoDvLqnquaF4v4Xnu4fp6ekSk\n/LasCH0QZivTVqEx21Hj92m8bg/HsQdeFuQsCkeCnigTRokVooZdbTov+Nthh0mr\nnFaeb4zJAgMBAAECggEAEFGl0WTwpg7Ie1l61wXewptNPzI3SzPDeBCY0HMTYj0Q\nN9EK0Pgobs3ZhfwnqZavj0dboKFZuOA9tJ9n0Wfb5+JByNM8C1Pvj774EInAPo4Z\nXIgVoyOa6fN90/SVZckHKClAQn6lRudtGvLKo3ZXTOJevNcNnn6MOFYuzKgbgNG5\nqt7xFpEOY+nGlZtVVnqUszNduwzR+8WBGLUnGq8mMbcN+ZXHF0NZDH2JG0zjtwux\nEwoXYRKoJNfXssw9zXcIqST7wEglObc9WEjrIdvXqbI18KRA0tdMuNwo9UYpGyCf\nHLzRds4D+Du+kpCewz1h1Dt8HycjPFPeNLvWHzyV8QKBgQD3KHTraJCGf39nOxCS\n2/9YcixZ0MQ5VkKt4AX2JnpeSa7eBE9fvjQeLXNo3UAHltzDu54JQ/KVx5CFS3jA\n5fIgYwJX4VZ9s694oPL4VMa17Gc+VJnwfj6T8cjST78SdT8Cj9HcpE5SPV0E/O8B\nNO7mR0EMFeZJgghGFC7ZWIZlWQKBgQC8UU7lt6Hf+NyAi+waeka4qcIMKg3Ql9fT\nOX5nkkOMn+ER812PYV7xHlEQX9kBusg37B7OzLlqIvW+/ez4i8ZwA7CAKJB29NOp\nVbgBiMc21ok3iiRJCIOcqafn0GHgqwPBmzq2PZ2JYoiykzVQu7sPDUDwoShfZwSR\nyyj5QKLE8QKBgF4U/WS6+gDouaOfHTD6I5oUZAOQb5Fv35P2ae6IOR55J+KFe31z\nlr1CCeOKDRyWddTgL0lRnx8ax02mLAIpxeBEMBkpwtW4t3vQsIyNINMReT+Fzs94\nDvQcHpjIGHC7Rs//1SALP3EYwLbsXUJ1Vtc7mmwyTeX/ZIzgk/DSPN6JAoGAHe7K\nnKbomwIigmg7OiYvcZDCIE7a7UoFazSbS/kqtYKAMus89tpiTe8ksXaatrSquIDW\nkMZnvmAaMaaI8SS+gPWFK4nHFLFrp2HRoqTMDYJiQyq5A8bPrKom3yj3Nc/ZBAAZ\nf/ghP0IjOkc91TxRyl2v8c+b7DYius3REHVeqfECgYEAr/eS8/wwrU/QWN3UAfgM\n1c3SBwrFv47L4STdURhBT3yD06XPjAuXogfbABBBvl8bgPtZFOJ/04qH2DS+m15s\n8p+yDHd9BA4pF9lYjVMSzPkEhueQi7I15t8FB/R4ArHr9DPucQvqMiQRsXwWdicN\nbFDnmifvdjiqCEmlnaK4V+A=\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-fbsvc@carbon-emission-trac.iam.gserviceaccount.com",
+  "client_id": "110439814168215662685",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40carbon-emission-trac.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
