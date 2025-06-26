@@ -65,7 +65,7 @@ def suggest_ways(breakdown, total_emission):
     for activity, emission in top_activities:
         if emission == 0:
             continue
-        st.write(f"💡 **{activity.title()}**: Consider reducing this activity.")
+        st.write(f"**{activity.title()}**: Consider reducing this activity.")
 
 def rank_emissions(breakdown):
     st.subheader(" Emission Ranking")
