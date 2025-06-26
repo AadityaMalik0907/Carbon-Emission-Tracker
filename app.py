@@ -10,29 +10,28 @@ st.title("🌱 Carbon Emission Tracker")
 # ------------------------ Login / Signup Section ------------------------ #
 st.sidebar.header("🔐 User Authentication")
 auth_mode = st.sidebar.radio("Login or Sign Up", ["Login", "Sign Up"])
-email = st.sidebar.text_input("Email")
-password = st.sidebar.text_input("Password", type="password")
+email = st.sidebar.text_input("Email", key="email")
+password = st.sidebar.text_input("Password", type="password", key="password")
 
-user_id = None
+if "user_id" not in st.session_state:
+    st.session_state["user_id"] = None
+
 if st.sidebar.button("Submit"):
     if email and password:
         try:
             if auth_mode == "Sign Up":
-                user_id = sign_up(email, password)
-                st.sidebar.success("User signed up successfully!")
+                uid = sign_up(email, password)
+                st.sidebar.success("Account created.")
             else:
-                # Firebase Admin SDK does not support user login directly
-                # Here we assume a simple placeholder to simulate login
-                user_id = "user:" + email  # Replace with real auth in production
-                st.sidebar.success("Logged in!")
-            st.session_state.user_id = user_id
+                uid = "user:" + email  # Fake login ID for demo
+            st.session_state["user_id"] = uid
+            st.rerun()
         except Exception as e:
-            st.sidebar.error(f"Auth Error: {e}")
+            st.sidebar.error(f"Auth failed: {e}")
     else:
-        st.sidebar.warning("Enter both email and password")
+        st.sidebar.warning("Please fill both fields.")
 
 user_id = st.session_state.get("user_id")
-
 if not user_id:
     st.info("Please log in to use the tracker.")
     st.stop()
