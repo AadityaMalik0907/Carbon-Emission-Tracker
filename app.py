@@ -101,7 +101,7 @@ def get_ideal_comparison_graph(user_total):
     st.pyplot(fig)
 
 def main():
-    st.title("🌿 Carbon Emission Tracker")
+    st.title("Carbon Emission Tracker")
 
     st.header("Enter Your Daily Activity Data")
     inputs = {}
@@ -127,7 +127,7 @@ def main():
         except ValueError as e:
             st.error(f"Error: {e}")
 
-    # 🚨 Always display last results if present
+    # Always display last results if present
     if st.session_state.latest_breakdown:
         st.subheader("Previous Calculation Results")
         st.metric("Last Total Emissions", f"{st.session_state.latest_total:.2f} kg CO₂")
