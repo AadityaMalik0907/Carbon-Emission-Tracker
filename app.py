@@ -1,7 +1,7 @@
 import streamlit as st
 import matplotlib.pyplot as plt
 from datetime import datetime
-from carbon_calculator import calculate_emissions, EMISSION_FACTORS, plot_carbon, get_ideal_comparison_graph
+from carbon_calculator import calculate_emissions, EMISSION_FACTORS
 from carbon_database import log_emission, get_user_emissions, sign_up
 
 st.set_page_config(page_title="Carbon Emission Tracker", layout="wide")
@@ -23,11 +23,32 @@ if st.button("Calculate"):
     st.session_state["latest_inputs"] = inputs
     st.session_state["latest_total"] = total
     st.session_state["latest_breakdown"] = breakdown
-    plot_carbon(breakdown)
-    get_ideal_comparison_graph(total)
+
+    # Bar chart for emission per activity
+    fig1, ax1 = plt.subplots()
+    ax1.bar(breakdown.keys(), breakdown.values(), color="skyblue")
+    ax1.set_title("Carbon Emission per Activity")
+    ax1.set_ylabel("CO₂ Emission (kg)")
+    st.pyplot(fig1)
+
+    # Pie chart for emission per activity
+    fig2, ax2 = plt.subplots()
+    ax2.pie(breakdown.values(), labels=breakdown.keys(), autopct="%1.1f%%")
+    ax2.set_title("Emission Share by Activity")
+    st.pyplot(fig2)
+
+    # Comparison with ideal value
+    ideal = 70
+    fig3, ax3 = plt.subplots()
+    ax3.bar(["Ideal Emission", "Your Emission"], [ideal, total], color=["green", "red"])
+    ax3.set_title("Comparison with Ideal Daily Emission")
+    ax3.set_ylabel("kg CO₂")
+    for i, val in enumerate([ideal, total]):
+        ax3.text(i, val + 1, f"{val:.1f}", ha="center")
+    st.pyplot(fig3)
 
     # Detect spike
-    if total > 100:  # example threshold
+    if total > 100:
         st.warning("Your carbon emission is significantly high today. Consider reducing energy or fuel usage.")
 
     if st.button("Save my data (requires login)"):
