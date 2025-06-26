@@ -15,14 +15,9 @@ EMISSION_FACTORS = {
 }
 
 # Session state defaults
-if "show_login" not in st.session_state:
-    st.session_state.show_login = False
-if "user_id" not in st.session_state:
-    st.session_state.user_id = None
-if "latest_breakdown" not in st.session_state:
-    st.session_state.latest_breakdown = None
-if "latest_total" not in st.session_state:
-    st.session_state.latest_total = None
+for key in ["show_login", "user_id", "latest_breakdown", "latest_total"]:
+    if key not in st.session_state:
+        st.session_state[key] = None if key == "user_id" else False if key == "show_login" else None
 
 def calculate_emissions(user_data):
     total_emission = 0
@@ -38,28 +33,30 @@ def calculate_emissions(user_data):
     return total_emission, breakdown
 
 def plot_carbon(breakdown):
-    st.subheader("Carbon Emission Graphs")
+    st.subheader("📊 Carbon Emission Graphs")
 
     non_zero_breakdown = {k: v for k, v in breakdown.items() if v > 0}
     if not non_zero_breakdown:
-        st.warning("No emissions to display.")
+        st.info("No emissions to display.")
+        return
 
     # Bar chart
-    fig1, ax1 = plt.subplots(figsize=(6, 4))
-    bars = ax1.bar(non_zero_breakdown.keys(), non_zero_breakdown.values(), color="red")
-    ax1.set_title("Carbon Emission per Activity")
-    ax1.set_ylabel("CO2 Emission (kg)")
+    fig1, ax1 = plt.subplots(figsize=(5, 3))
+    bars = ax1.bar(non_zero_breakdown.keys(), non_zero_breakdown.values(), color="#FF6F61")
+    ax1.set_title("Carbon Emission by Activity", fontsize=12)
+    ax1.set_ylabel("CO₂ (kg)")
     ax1.set_xlabel("Activity")
     ax1.tick_params(axis='x', rotation=45)
     for bar in bars:
         height = bar.get_height()
-        ax1.text(bar.get_x() + bar.get_width() / 2, height + 0.05, f"{height:.1f}", ha='center')
+        ax1.text(bar.get_x() + bar.get_width() / 2, height + 0.2, f"{height:.1f}", ha='center', fontsize=8)
     st.pyplot(fig1)
 
     # Pie chart
-    fig2, ax2 = plt.subplots(figsize=(5, 5))
-    ax2.pie(non_zero_breakdown.values(), labels=non_zero_breakdown.keys(), autopct='%1.1f%%', startangle=140)
-    ax2.set_title('Carbon Emission Share by Activity')
+    fig2, ax2 = plt.subplots(figsize=(4, 3))
+    ax2.pie(non_zero_breakdown.values(), labels=non_zero_breakdown.keys(), autopct='%1.1f%%',
+            startangle=140, textprops={'fontsize': 7}, colors=plt.cm.Paired.colors)
+    ax2.set_title("Emission Share by Activity", fontsize=11)
     ax2.axis('equal')
     st.pyplot(fig2)
 
@@ -79,36 +76,36 @@ def comparisons(user_id):
     weeks = ['This Week', 'Last Week']
     values = [week1_total, week2_total]
 
-    fig, ax = plt.subplots(figsize=(6, 4))
-    ax.bar(weeks, values, color=['orange', 'green'])
-    ax.set_title('Weekly Carbon Emission Comparison')
-    ax.set_ylabel('CO2 Emission (kg)')
+    fig, ax = plt.subplots(figsize=(4, 2.5))
+    ax.bar(weeks, values, color=['#FFA726', '#66BB6A'])
+    ax.set_title("Weekly Emission Comparison", fontsize=11)
+    ax.set_ylabel("CO₂ (kg)")
     for i, val in enumerate(values):
-        ax.text(i, val + 0.1, f"{val:.1f}", ha='center')
+        ax.text(i, val + 0.5, f"{val:.1f}", ha='center', fontsize=9)
     st.pyplot(fig)
 
 def get_ideal_comparison_graph(user_total):
-    ideal = 70  # kg/day target
-    categories = ['Ideal Emission', 'Your Emission']
+    ideal = 70
+    categories = ['Ideal', 'You']
     values = [ideal, user_total]
 
-    fig, ax = plt.subplots(figsize=(4, 3))
-    ax.bar(categories, values, color=['green', 'red'])
-    ax.set_title('Ideal vs Your Daily Emission')
-    ax.set_ylabel('CO2 (kg)')
+    fig, ax = plt.subplots(figsize=(3.5, 2.5))
+    ax.bar(categories, values, color=['#81C784', '#E57373'])
+    ax.set_title("Your Emission vs Ideal", fontsize=11)
+    ax.set_ylabel("CO₂ (kg)")
     for i, val in enumerate(values):
-        ax.text(i, val + 1, f"{val:.1f}", ha='center')
+        ax.text(i, val + 0.8, f"{val:.1f}", ha='center', fontsize=9)
     st.pyplot(fig)
 
 def main():
-    st.title("Carbon Emission Tracker")
+    st.title("🌿 Carbon Emission Tracker")
 
     st.header("Enter Your Daily Activity Data")
     inputs = {}
     cols = st.columns(3)
     for i, (activity, factor) in enumerate(EMISSION_FACTORS.items()):
         with cols[i % 3]:
-            qty = st.number_input(f"{activity.title()} ({factor} kg CO2/unit)", min_value=0.0, step=0.1, key=f"{activity}_input")
+            qty = st.number_input(f"{activity.title()} ({factor} kg CO₂/unit)", min_value=0.0, step=0.1, key=f"{activity}_input")
             inputs[activity] = qty
 
     if st.button("Calculate Emissions"):
@@ -117,7 +114,6 @@ def main():
             st.metric("Total Emissions", f"{total_emission:.2f} kg CO₂")
             st.session_state.latest_breakdown = breakdown
             st.session_state.latest_total = total_emission
-
             plot_carbon(breakdown)
             get_ideal_comparison_graph(total_emission)
 
@@ -127,18 +123,19 @@ def main():
         except ValueError as e:
             st.error(f"Error: {e}")
 
-    # Always display last results if present
+    # Show last results if present
     if st.session_state.latest_breakdown:
-        st.subheader("Previous Calculation Results")
+        st.subheader("Previous Results")
         st.metric("Last Total Emissions", f"{st.session_state.latest_total:.2f} kg CO₂")
         plot_carbon(st.session_state.latest_breakdown)
         get_ideal_comparison_graph(st.session_state.latest_total)
 
+    # Login section
     if st.session_state.show_login:
-        st.subheader("Login or Sign Up to Save Data")
-        mode = st.radio("Mode", ["Login", "Sign Up"], key="auth_mode")
-        email = st.text_input("Email", key="auth_email")
-        password = st.text_input("Password", type="password", key="auth_password")
+        st.subheader("Login / Sign Up to Save Data")
+        mode = st.radio("Mode", ["Login", "Sign Up"])
+        email = st.text_input("Email")
+        password = st.text_input("Password", type="password")
 
         if st.button("Submit Login"):
             if email and password:
@@ -154,6 +151,7 @@ def main():
             else:
                 st.warning("Please enter both email and password.")
 
+    # Weekly comparison
     if st.session_state.user_id and st.button("Show Weekly Comparison"):
         comparisons(st.session_state.user_id)
 
