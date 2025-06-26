@@ -1,12 +1,16 @@
+import json
+import streamlit as st
 import firebase_admin
 from firebase_admin import credentials, db, auth
 from datetime import datetime
 
-# Initialize Firebase
-cred = credentials.Certificate("E:/Carbon emmison/firebase_carbon_tracker.json")
-firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://console.firebase.google.com/project/carbon-emission-trac/overview' 
-})
+# Initialize Firebase only once
+if not firebase_admin._apps:
+    cred_dict = json.loads(st.secrets["FIREBASE_KEY"])
+    cred = credentials.Certificate(cred_dict)
+    firebase_admin.initialize_app(cred, {
+        'databaseURL': st.secrets["FIREBASE_DB_URL"]
+    })
 
 def sign_up(email, password):
     user = auth.create_user(email=email, password=password)
